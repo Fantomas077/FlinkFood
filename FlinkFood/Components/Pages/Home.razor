@@ -1,7 +1,116 @@
 ﻿@page "/"
+<PageTitle>FlinkFood</PageTitle>
+@inject CategoryService _CatSvc
+@inject ProductService _Svc
 
-<PageTitle>Home</PageTitle>
+<!-- Hero Section -->
+<section class="hero d-flex align-items-center text-white mb-5"
+         style="background-image: url('/images/hero/b6.png');
+                background-size: cover;
+                background-position: center;
+                height: 55vh;
+                position: relative;">
 
-<h1>Hello, world!</h1>
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);"></div>
 
-Welcome to your new app.
+    <div class="container text-center position-relative">
+        <h1 class="fw-bold display-4">Frische Produkte. Schnell geliefert.</h1>
+        <p class="lead mb-4">Obst, Gemüse, Snacks & Drinks in wenigen Minuten.</p>
+
+        <div class="d-flex justify-content-center">
+            <input type="text"
+                   class="form-control rounded-pill shadow-lg"
+                   placeholder="🔍 Suche nach Produkten..."
+                   style="width: 60%; padding: 15px; font-size: 1.1rem;">
+        </div>
+    </div>
+</section>
+
+
+<section class="mb-5">
+    <div class="d-flex justify-content-center gap-2 mb-4">
+
+        <button class="btn btn-success rounded-pill px-4">
+            Alle
+        </button>
+
+        @foreach (var cat in CategoryList)
+        {
+            <button class="btn btn-outline-success rounded-pill px-4">
+                @cat.Name
+            </button>
+        }
+
+    </div>
+
+</section>
+    
+
+
+<section>
+    <!-- Product Cards -->
+
+    <div class="row g-4">
+        @foreach (var p in ProductList)
+        {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+
+                    <!-- Card Header -->
+                    <!-- Price badge -->
+                    <span class="badge bg-success position-absolute top-0 end-0 m-3 px-3 py-2 fs-6">
+                        @p.Price.ToString("0.00") €
+                    </span>
+
+
+                    <div class="p-4 text-center"
+                         style="background-color:yellow;">
+
+                        <img src="/images/product/@p.ImageUrl"
+                             class="img-fluid"
+                             style="max-height: 150px; object-fit: fill;"
+                             alt="@p.Name">
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body">
+
+                        <!-- Name left / Category right -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-bold">@p.Name</h6>
+
+                            <span class="badge bg-info  text-dark">
+                                @p.Category?.Emoji @p.Category?.Name
+                            </span>
+                        </div>
+
+                        <!-- Description -->
+                        <p class="text-muted small">
+                            @p.Description
+                        </p>
+
+                        <!-- Button -->
+                        <button class="btn btn-success w-100 rounded-pill mt-3">
+                            <i class="bi bi-cart3 me-2"></i>
+                            Bestellen
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+</section>
+
+
+@code {
+    private List<Category> CategoryList { get; set; } = new();
+    private List<Product> ProductList { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CategoryList = (await _CatSvc.GetAll()).ToList();
+        ProductList = (await _Svc.GetAll()).ToList();
+    }
+}
