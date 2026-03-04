@@ -3,6 +3,7 @@
 @using FlinkFood.Services.Extensions
 @inject ProductService svc
 @inject CategoryService svcCat
+@inject ImageService imageSvc
 @inject NavigationManager _Nav
 @inject ISnackbar Snackbar
 
@@ -54,6 +55,20 @@
                     <label>Category</label>
                     <ValidationMessage For="() => form.CategoryId" />
                 </div>
+                <div class="form-floating py-3 col-12">
+                    <InputFile OnChange="LoadImage" accept="image/*" class="form-control" />
+                    <label>Upload Image</label>
+                    <ValidationMessage For="() => form.ImageUrl" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(form.ImageUrl))
+                {
+                    <img src="/images/product/@form.ImageUrl"
+                         class="img-thumbnail mt-2"
+                         style="max-width: 200px;" />
+                }
+
+
 
 
 
@@ -136,6 +151,27 @@
         {
             IsProcessing = false;
         }
+    }
+    private async Task LoadImage(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file == null)
+            return;
+
+        
+        if (!string.IsNullOrWhiteSpace(form.ImageUrl))
+        {
+            imageSvc.DeleteImage(form.ImageUrl);
+        }
+
+        
+        var fileName = await imageSvc.UploadFile(file);
+
+       
+        form.ImageUrl = fileName;
+
+        Snackbar.Add("Image uploaded successfully", Severity.Success);
     }
 
 
