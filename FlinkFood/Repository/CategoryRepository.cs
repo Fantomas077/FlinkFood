@@ -19,7 +19,7 @@ namespace FlinkFood.Repository
 
         public async Task DeleteAsync(Category category)
         {
-            _db.Remove(category);
+            _db.Category.Remove(category);
             await _db.SaveChangesAsync();
         }
 
@@ -35,7 +35,7 @@ namespace FlinkFood.Repository
 
         public async Task UpdateAsync(Category category)
         {
-            _db.Update(category);
+            _db.Category.Update(category);
             await _db.SaveChangesAsync();
         }
         public async Task<Category?> FindByNameAsync(string name)

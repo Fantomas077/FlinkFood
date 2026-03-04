@@ -10,5 +10,6 @@ namespace FlinkFood.Data
         public string Name { get; set; }
 
         public string? Emoji { get; set; }
+        public List<Product> Product { get; set; }
     }
 }
