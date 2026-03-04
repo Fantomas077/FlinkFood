@@ -1,8 +1,105 @@
 ﻿@page "/category/create"
 @page "/category/update/{id:int}"
-<h3>CategoryUpsert</h3>
+@using FlinkFood.Services.Extensions
+@inject CategoryService svc
+@inject NavigationManager _Nav
+@inject ISnackbar Snackbar
+
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-black bg-gradient m-l-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">@((id > 0 ? "Update" : "Create")) Category</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-4">
+        <EditForm Model="form" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+          
+
+            <div class="border p-3 mt-4">
+                <div class="form-floating py-3 col-12">
+                    <InputText class="form-control" @bind-Value="form.Name" id="Name" />
+                    <label>Name</label>
+                    <ValidationMessage For="() => form.Name" />
+                </div>
+
+                <div class="d-flex gap-3 p-4">
+                    <button type="submit" class="btn btn-primary" disabled="@IsProcessing">
+                        @(IsProcessing ? "Processing..." : (id > 0 ? "Update" : "Create"))
+                    </button>
+
+                    <a href="/category" class="btn btn-secondary">Back to Category</a>
+                </div>
+            </div>
+
+
+        </EditForm>
+    </div>
+</div>
+
 
 @code {
-    [Parameter]
-    public int id{ get; set; }
+    [Parameter] public int id { get; set; }
+    private string? ErrorMessage { get; set; }
+
+
+    private Category form { get; set; } = new Category();
+    public bool IsProcessing { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategory();
+    }
+
+    private async Task LoadCategory()
+    {
+        if (id > 0)
+        {
+            form = await svc.GetById(id);
+        }
+    }
+    async Task Submit()
+    {
+        ErrorMessage = null;
+        IsProcessing = true;
+        await Task.Delay(2000);
+
+        try
+        {
+            if (form.Id > 0)
+            {
+                await svc.UpdateCategoryAsync(form);
+                Snackbar.Add($"{form.Name} wurde updated",Severity.Success);
+            }
+            else
+            {
+                await svc.AddCategoryAsync(form);
+                Snackbar.Add($"{form.Name} wurde added", Severity.Success);
+            }
+
+            _Nav.NavigateTo("/category");
+        }
+        catch (CategoryAlreadyExisted ex)
+        {
+            ErrorMessage = ex.Message;
+            Snackbar.Add($"{form.Name} exist  already", Severity.Warning);
+        }
+        catch (NotFoundException ex)
+        {
+            ErrorMessage = ex.Message;
+            Snackbar.Add($"{form.Name} wurde not found", Severity.Warning);
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
+    }
+
+
+
 }
