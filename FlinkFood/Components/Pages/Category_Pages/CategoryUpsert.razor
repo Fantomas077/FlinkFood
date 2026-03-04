@@ -27,13 +27,18 @@
                     <label>Name</label>
                     <ValidationMessage For="() => form.Name" />
                 </div>
+                <div class="form-floating py-3 col-12">
+                    <InputText class="form-control" @bind-Value="form.Emoji" id="Emoji" />
+                    <label>Emoji</label>
+                    <ValidationMessage For="() => form.Emoji" />
+                </div>
 
                 <div class="d-flex gap-3 p-4">
                     <button type="submit" class="btn btn-primary" disabled="@IsProcessing">
-                        @(IsProcessing ? "Processing..." : (id > 0 ? "Update" : "Create"))
+                        <i class="bi bi-save2-fill"></i> @(IsProcessing ? "Processing..." : (id > 0 ? "Update" : "Create"))
                     </button>
 
-                    <a href="/category" class="btn btn-secondary">Back to Category</a>
+                    <a href="/category" class="btn btn-secondary"> <i class="bi bi-skip-backward-fill"></i> Back to Category</a>
                 </div>
             </div>
 

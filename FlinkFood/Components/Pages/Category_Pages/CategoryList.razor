@@ -1,6 +1,8 @@
 ﻿@page "/Category"
 @using FlinkFood.Services
+@using FlinkFood.Services.Extensions
 @inject CategoryService svc
+@inject ISnackbar Snackbar
 
 @if (IsProcessing)
 {
@@ -31,6 +33,7 @@ else
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th>Emoji</th>
                             <th>Name</th>
                             <th></th>
                         </tr>
@@ -40,10 +43,11 @@ else
                         @foreach (var item in category)
                         {
                             <tr>
+                                <td>@item.Emoji</td>
                                 <td>@item.Name</td>
                                 <td>
                                     <a href="/category/update/@item.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
-                                    <button class="btn btn-danger"><i class="bi bi-trash-fill"></i> Delete</button>
+                                    <button class="btn btn-danger" @onclick="()=>Delete(item.Id)"><i class="bi bi-trash-fill"></i> Delete</button>
                                 </td>
                             </tr>
                         }
@@ -76,4 +80,26 @@ else
         var result = await svc.GetAll();
         category = result.ToList();
     }
+    private async Task Delete(int id)
+    {
+        try
+        {
+            var obj = await svc.GetById(id);
+            await svc.DeleteCategoryAsync(obj);
+
+            Snackbar.Add($"{obj.Name} deleted successfully", Severity.Success);
+
+            await LoadCategory();
+        }
+        catch (NotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Unexpected error", Severity.Error);
+        }
+
+    }
+
 }
