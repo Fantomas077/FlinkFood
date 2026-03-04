@@ -30,7 +30,7 @@ namespace FlinkFood.Repository
 
         public async Task<IEnumerable<Product>> GetAllAsync()
         {
-            return await _db.Product.ToListAsync();
+            return await _db.Product.Include(r=>r.Category).ToListAsync();
         }
 
         public async Task UpdateAsync(Product obj)

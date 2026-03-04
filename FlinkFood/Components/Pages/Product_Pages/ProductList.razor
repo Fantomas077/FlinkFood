@@ -1,0 +1,120 @@
+﻿@page "/Product"
+@using FlinkFood.Services
+@using FlinkFood.Services.Extensions
+@inject ProductService svc
+@inject CategoryService svcCat
+@inject ISnackbar Snackbar
+
+@if (IsProcessing)
+{
+    <div class="position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center">
+        <img src="/images/loading.gif" alt="loading" />
+    </div>
+}
+else
+{
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-black bg-gradient m-l-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">Product List</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row pb-3">
+                <div class="col-12 text-end">
+                    <a href="/Product/create" class="btn btn-secondary" style="width:200px"><i class="bi bi-plus-circle"></i> Add New Product</a>
+                </div>
+
+            </div>
+            @if (Product.Any())
+            {
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Special Tag</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                            <th>Emoji</th>
+                            <th>Image</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Product)
+                        {
+                            <tr>
+                                
+                                <td>@item.Name</td>
+                                <td>@item.Description</td>
+                                <td>@item.SpecialTag</td>
+                                <td>@item.Price</td>
+                                <td>@item.Category.Name</td>
+                                <td>@item.Category.Emoji</td>
+                                <td><img src="/images/product/@item.ImageUrl" alt="Alternate Text" style="width:100px" /></td>
+                                <td>
+                                    <a href="/Product/update/@item.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+                                    <button class="btn btn-danger" @onclick="()=>Delete(item.Id)"><i class="bi bi-trash-fill"></i> Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            }
+            else
+            {
+                <p>No Product For the moment</p>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    public bool IsProcessing { get; set; } = false;
+    private List<Product> Product = new();
+   
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsProcessing = true;
+        await Task.Delay(2000);
+        await LoadProduct();
+        IsProcessing = false;
+    }
+
+    private async Task LoadProduct()
+    {
+        var result = await svc.GetAll();
+        Product = result.ToList();
+    }
+    private async Task Delete(int id)
+    {
+        try
+        {
+            var obj = await svc.GetById(id);
+            await svc.DeleteProductAsync(obj);
+
+            Snackbar.Add($"{obj.Name} deleted successfully", Severity.Success);
+
+            await LoadProduct();
+        }
+        catch (NotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Unexpected error", Severity.Error);
+        }
+
+    }
+
+}

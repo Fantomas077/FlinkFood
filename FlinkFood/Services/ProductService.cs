@@ -26,7 +26,7 @@ namespace FlinkFood.Services
             }
             return obj;
         }
-        public async Task AddCategoryAsync(Product obj)
+        public async Task AddProductAsync(Product obj)
         {
 
             obj.Name = obj.Name.Trim().ToLowerInvariant();
@@ -34,38 +34,38 @@ namespace FlinkFood.Services
 
             if (await _cat.ExistsByNameAsync(obj.Name))
             {
-                throw new CategoryAlreadyExisted($"{obj.Name} already exists");
+                throw new ProductAlreadyExisted($"{obj.Name} already exists");
             }
 
             await _cat.AddAsync(obj);
         }
 
-        public async Task UpdateCategoryAsync(Category category)
+        public async Task UpdateProductAsync(Product obj)
         {
 
-            category.Name = category.Name.Trim().ToLowerInvariant();
+            obj.Name = obj.Name.Trim().ToLowerInvariant();
 
 
-            var existing = await _cat.FindById(category.Id);
+            var existing = await _cat.FindById(obj.Id);
             if (existing == null)
             {
                 throw new NotFoundException("Id not found");
             }
 
 
-            if (await _cat.ExistsByNameAsync(category.Name, excludeId: category.Id))
+            if (await _cat.ExistsByNameAsync(obj.Name, excludeId: obj.Id))
             {
-                throw new CategoryAlreadyExisted($"{category.Name} already exists");
+                throw new ProductAlreadyExisted($"{obj.Name} already exists");
             }
 
 
-            existing.Name = category.Name;
+            existing.Name = obj.Name;
             await _cat.UpdateAsync(existing);
         }
-        public async Task DeleteCategoryAsync(Category category)
+        public async Task DeleteProductAsync(Product obj)
         {
 
-            var existing = await _cat.FindById(category.Id);
+            var existing = await _cat.FindById(obj.Id);
             if (existing == null)
             {
                 throw new NotFoundException("Id not found");

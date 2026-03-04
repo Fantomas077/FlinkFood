@@ -1,0 +1,143 @@
+﻿@page "/Product/create"
+@page "/Product/update/{id:int}"
+@using FlinkFood.Services.Extensions
+@inject ProductService svc
+@inject CategoryService svcCat
+@inject NavigationManager _Nav
+@inject ISnackbar Snackbar
+
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-black bg-gradient m-l-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">@((id > 0 ? "Update" : "Create")) Product</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-4">
+        <EditForm Model="form" OnValidSubmit="Submit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+
+            <div class="border p-3 mt-4">
+                <div class="form-floating py-3 col-12">
+                    <InputText class="form-control" @bind-Value="form.Name" id="Name" />
+                    <label>Name</label>
+                    <ValidationMessage For="() => form.Name" />
+                </div>
+                <div class="form-floating py-3 col-12">
+                    <InputTextArea class="form-control" @bind-Value="form.Description" id="Description" />
+                    <label>Description</label>
+                    <ValidationMessage For="() => form.Description" />
+                </div>
+                <div class="form-floating py-3 col-12">
+                    <InputText class="form-control" @bind-Value="form.SpecialTag" id="SpecialTag" />
+                    <label>SpecialTag</label>
+                    <ValidationMessage For="() => form.SpecialTag" />
+                </div>
+                <div class="form-floating py-3 col-12">
+                    <InputNumber class="form-control" @bind-Value="form.Price" id="Price" />
+                    <label>Price</label>
+                    <ValidationMessage For="() => form.Price" />
+                </div>
+                <div class="form-floating py-3 col-12">
+                    <InputSelect class="form-control" @bind-Value="form.CategoryId" id="CategoryId">
+                        <option value="0" disabled selected>--Select Category--</option>
+                        @foreach (var item in CategoryList)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </InputSelect>
+                    <label>Category</label>
+                    <ValidationMessage For="() => form.CategoryId" />
+                </div>
+
+
+
+                <div class="d-flex gap-3 p-4 col-6">
+                    <button type="submit" class="btn btn-primary form-control" disabled="@IsProcessing">
+                        <i class="bi bi-save2-fill"></i> @(IsProcessing ? "Processing..." : (id > 0 ? "Update" : "Create"))
+                    </button>
+
+                    <a href="/Product" class="btn btn-secondary form-control"> <i class="bi bi-skip-backward-fill"></i> Back to Product</a>
+                </div>
+            </div>
+
+
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public int id { get; set; }
+    private string? ErrorMessage { get; set; }
+
+    public List<Category> CategoryList { get; set; } = new List<Category>();
+
+    private Product form { get; set; } = new Product();
+    public bool IsProcessing { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+        await LoadProduct();
+    }
+
+    private async Task LoadCategories()
+    {
+        var obj = await svcCat.GetAll();
+        CategoryList = obj.ToList();
+    }
+
+
+    private async Task LoadProduct()
+    {
+        if (id > 0)
+        {
+            form = await svc.GetById(id);
+        }
+    }
+    async Task Submit()
+    {
+        ErrorMessage = null;
+        IsProcessing = true;
+        await Task.Delay(2000);
+
+        try
+        {
+            if (form.Id > 0)
+            {
+                await svc.UpdateProductAsync(form);
+                Snackbar.Add($"{form.Name} wurde updated", Severity.Success);
+            }
+            else
+            {
+                await svc.AddProductAsync(form);
+                Snackbar.Add($"{form.Name} wurde added", Severity.Success);
+            }
+
+            _Nav.NavigateTo("/Product");
+        }
+        catch (ProductAlreadyExisted ex)
+        {
+            ErrorMessage = ex.Message;
+            Snackbar.Add($"{form.Name} exist  already", Severity.Warning);
+        }
+        catch (NotFoundException ex)
+        {
+            ErrorMessage = ex.Message;
+            Snackbar.Add($"{form.Name} wurde not found", Severity.Warning);
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
+    }
+
+
+
+}
