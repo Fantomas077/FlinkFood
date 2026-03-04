@@ -21,30 +21,28 @@
             <input type="text"
                    class="form-control rounded-pill shadow-lg"
                    placeholder="🔍 Suche nach Produkten..."
-                   style="width: 60%; padding: 15px; font-size: 1.1rem;">
+                   style="width: 60%; padding: 15px; font-size: 1.1rem; " @oninput="Search">
         </div>
     </div>
 </section>
 
-
 <section class="mb-5">
     <div class="d-flex justify-content-center gap-2 mb-4">
 
-        <button class="btn btn-success rounded-pill px-4">
+        <button class="@GetBtnClass(0)" @onclick="() => SearchByCat(0)">
             Alle
         </button>
 
         @foreach (var cat in CategoryList)
         {
-            <button class="btn btn-outline-success rounded-pill px-4">
+            <button class="@GetBtnClass(cat.Id)" @onclick="() => SearchByCat(cat.Id)">
                 @cat.Name
             </button>
         }
 
     </div>
-
 </section>
-    
+
 
 
 <section>
@@ -105,12 +103,47 @@
 
 
 @code {
-    private List<Category> CategoryList { get; set; } = new();
-    private List<Product> ProductList { get; set; } = new();
+    @code {
+        private List<Category> CategoryList { get; set; } = new();
+        private List<Product> AllProducts { get; set; } = new();
+        private List<Product> ProductList { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        CategoryList = (await _CatSvc.GetAll()).ToList();
-        ProductList = (await _Svc.GetAll()).ToList();
+        private int ActiveCategoryId = 0;
+        private string SearchText = "";
+
+        protected override async Task OnInitializedAsync()
+        {
+            CategoryList = (await _CatSvc.GetAll()).ToList();
+            AllProducts = (await _Svc.GetAll()).ToList();
+            ProductList = AllProducts;
+        }
+
+        private void SearchByCat(int catId)
+        {
+            ActiveCategoryId = catId;
+            ApplyFilters();
+        }
+
+        private void Search(ChangeEventArgs e)
+        {
+            SearchText = e.Value?.ToString() ?? "";
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            ProductList = AllProducts
+                .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                .Where(p => ActiveCategoryId == 0 || p.CategoryId == ActiveCategoryId)
+                .ToList();
+        }
+
+        private string GetBtnClass(int catId)
+        {
+            return catId == ActiveCategoryId
+                ? "btn btn-success rounded-pill px-4"
+                : "btn btn-outline-success rounded-pill px-4";
+        }
     }
+
 }
