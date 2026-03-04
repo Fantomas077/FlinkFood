@@ -1,6 +1,9 @@
 using FlinkFood.Components;
 using FlinkFood.Components.Account;
 using FlinkFood.Data;
+using FlinkFood.Repository;
+using FlinkFood.Repository.IRepository;
+using FlinkFood.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +17,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<CategoryService>();
 
 builder.Services.AddAuthentication(options =>
     {
