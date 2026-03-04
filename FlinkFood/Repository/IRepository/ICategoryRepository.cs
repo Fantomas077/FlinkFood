@@ -9,5 +9,8 @@ namespace FlinkFood.Repository.IRepository
         Task DeleteAsync(Category category);
         Task<Category?> FindById(int id);
         Task<IEnumerable<Category>> GetAllAsync();
+        Task<Category?> FindByNameAsync(string name);
+        Task<bool> ExistsByNameAsync(string name, int? excludeId = null);
+
     }
 }
