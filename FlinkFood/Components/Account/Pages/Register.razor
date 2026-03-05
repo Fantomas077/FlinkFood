@@ -11,6 +11,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
@@ -26,7 +27,7 @@
 
                 <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
                     <DataAnnotationsValidator />
-                    
+
                     <hr />
                     <ValidationSummary class="text-danger" role="alert" />
                     <div class="form-floating mb-3">
@@ -45,27 +46,27 @@
                         <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputSelect  @bind-Value="Input.Role" id="Input.Role" class="form-control"  >
+                        <InputSelect @bind-Value="Input.Role" id="Input.Role" class="form-control">
                             <option value="@SD.Role_Admin">@SD.Role_Admin</option>
                             <option value="@SD.Role_Customer" selected>@SD.Role_Customer</option>
-                          
+
                         </InputSelect>
                         <label for="Role">--Select Role--</label>
-                        
-                        <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+
+                        <ValidationMessage For="() => Input.Role" class="text-danger" />
                     </div>
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
                 </EditForm>
                 <br />
                 <ExternalLoginPicker />
                 <hr />
-               <p class="mt-2 text-center">
+                <p class="mt-2 text-center">
                     <small class="text-muted text-center">
                         Already Have an Account yet?
                         <a href="/Account/Login">Sign In</a>
-                   </small>
+                    </small>
 
-               </p>
+                </p>
             </div>
         </div>
     </div>
@@ -105,7 +106,23 @@
         }
 
         Logger.LogInformation("User created a new account with password.");
+        if (!await RoleManager.RoleExistsAsync(SD.Role_Customer)) ;
+        {
+            await RoleManager.CreateAsync(new IdentityRole(SD.Role_Customer));
+            await RoleManager.CreateAsync(new IdentityRole(SD.Role_Admin));
+        }
 
+
+        if (Input.Role is not null)
+        {
+
+            await UserManager.AddToRoleAsync(user, Input.Role);
+        }
+        else
+        {
+            await UserManager.AddToRoleAsync(user, SD.Role_Customer);
+
+        }
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
