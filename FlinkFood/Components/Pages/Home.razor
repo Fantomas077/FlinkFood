@@ -2,6 +2,12 @@
 <PageTitle>FlinkFood</PageTitle>
 @inject CategoryService _CatSvc
 @inject ProductService _Svc
+@inject AuthenticationStateProvider Auth
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject ShoppingCartService _Shop
+
+
 
 <!-- Hero Section -->
 <section class="hero d-flex align-items-center text-white mb-5"
@@ -88,7 +94,7 @@
                         </p>
 
                         <!-- Button -->
-                        <button class="btn btn-success w-100 rounded-pill mt-3">
+                        <button class="btn btn-success w-100 rounded-pill mt-3" @onclick="() => AddToCart(p.Id)">
                             <i class="bi bi-cart3 me-2"></i>
                             Bestellen
                         </button>
@@ -103,47 +109,74 @@
 
 
 @code {
-    @code {
-        private List<Category> CategoryList { get; set; } = new();
-        private List<Product> AllProducts { get; set; } = new();
-        private List<Product> ProductList { get; set; } = new();
+    private List<Category> CategoryList { get; set; } = new();
+    private List<Product> AllProducts { get; set; } = new();
+    private List<Product> ProductList { get; set; } = new();
 
-        private int ActiveCategoryId = 0;
-        private string SearchText = "";
+    private int ActiveCategoryId = 0;
+    private string SearchText = "";
 
-        protected override async Task OnInitializedAsync()
-        {
-            CategoryList = (await _CatSvc.GetAll()).ToList();
-            AllProducts = (await _Svc.GetAll()).ToList();
-            ProductList = AllProducts;
-        }
 
-        private void SearchByCat(int catId)
-        {
-            ActiveCategoryId = catId;
-            ApplyFilters();
-        }
 
-        private void Search(ChangeEventArgs e)
-        {
-            SearchText = e.Value?.ToString() ?? "";
-            ApplyFilters();
-        }
+    protected override async Task OnInitializedAsync()
+    {
 
-        private void ApplyFilters()
-        {
-            ProductList = AllProducts
-                .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
-                .Where(p => ActiveCategoryId == 0 || p.CategoryId == ActiveCategoryId)
-                .ToList();
-        }
 
-        private string GetBtnClass(int catId)
-        {
-            return catId == ActiveCategoryId
-                ? "btn btn-success rounded-pill px-4"
-                : "btn btn-outline-success rounded-pill px-4";
-        }
+        CategoryList = (await _CatSvc.GetAll()).ToList();
+        AllProducts = (await _Svc.GetAll()).ToList();
+        ProductList = AllProducts;
     }
 
+    private void SearchByCat(int catId)
+    {
+        ActiveCategoryId = catId;
+        ApplyFilters();
+    }
+
+    private void Search(ChangeEventArgs e)
+    {
+        SearchText = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        ProductList = AllProducts
+            .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+            .Where(p => ActiveCategoryId == 0 || p.CategoryId == ActiveCategoryId)
+            .ToList();
+    }
+
+    private string GetBtnClass(int catId)
+    {
+        return catId == ActiveCategoryId
+            ? "btn btn-success rounded-pill px-4"
+            : "btn btn-outline-success rounded-pill px-4";
+    }
+
+    private async Task AddToCart(int id)
+    {
+        var authState = await Auth.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var authenticated = user.Identity is not null && user.Identity.IsAuthenticated;
+        if (!authenticated)
+        {
+            Navigation.NavigateTo("account/login");
+            return;
+        }
+        else
+        {
+            var obj = await _Svc.GetById(id);
+            await _Shop.AddToCartAsync(id);
+
+            Snackbar.Add($"{obj.Name} wurde in den Korb gelegt", Severity.Success);
+        }
+
+        
+    }
+
+
+
 }
+
+

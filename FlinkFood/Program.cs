@@ -20,9 +20,11 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IShoppingCartRepository,ShoppingCartRepository>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<ShoppingCartService>();
 builder.Services.AddMudServices();
 
 builder.Services.AddAuthentication(options =>

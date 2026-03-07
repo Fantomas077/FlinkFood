@@ -1,86 +1,193 @@
-﻿@page "/Cart"
-<div class="row w-100">
-	<div class="col-lg-6 col-12">
-		<div class="container p-4 m-2">
-			<h4 class="text-center text-success display-6">
-				Cart Summary
-			</h4>
+﻿@page "/cart"
+@using Microsoft.AspNetCore.Authorization
+@inject ShoppingCartService CartService
+@inject ProductService ProductService
+@inject ISnackbar Snackbar
+@attribute [Authorize]
 
+<div class="container py-4">
 
-			<div class="d-flex p-2 m-2">
-				<div class="card flex-row w-100">
-					<img class="card-img-left" style="width: 120px;">
-					<div class="card-body">
-						<div class="d-flex justify-content-between align-items-center">
-							<h4 class="">
-								--ProductName--
-							</h4>
-							<h4>
-								--PRICE--
-							</h4>
-						</div>
-						<div class="flex-fill">
-							<h4 class="text-danger">
-								--COUNT*PRICE--
-							</h4>
-						</div>
-						<div class="d-flex justify-content-between align-items-center">
-							<div class="d-flex justify-content-between g-0">
-								<span>
-									<i class="bi bi-dash-circle-fill btn text-secondary"></i>
-								</span>
-								<span class="ml-1 me-1">
-									<b class="lead">--Count--</b>
-								</span>
-								<span>
-									<i class="bi bi-plus-circle-fill btn text-secondary"></i>
-								</span>
-							</div>
-							<button class="btn btn-danger">Remove</button>
-						</div>
-					</div>
-				</div>
-			</div>
+    <h2 class="text-success fw-bold mb-4 text-center">
+        🛒 Dein Warenkorb
+    </h2>
 
-		</div>
-	</div>
-	<div class="col-lg-6 col-12 p-4">
-		<div class="card">
-			<div class="card-header text-success text-center display-6">
-				Pickup Details
-			</div>
-			<div class="card-body">
-				<form>
-					<div class="form-group">
-						<label>Name</label>
-						<input type="text" class="form-control" />
-					</div>
-					<div class="form-group">
-						<label>Email</label>
-						<input type="text" class="form-control" />
-					</div>
-					<div class="form-group">
-						<label>Phone</label>
-						<input type="text" class="form-control" />
-					</div>
+    <div class="row">
 
-				</form>
-				<div class="card mt-4 bg-light">
-					<div class="card-body">
-						<h4>
-							Grand Total: --$$--
-						</h4>
-						<h4>
-							No. of Items: --COUNT--
-						</h4>
-					</div>
+        <!-- LEFT SIDE : CART ITEMS -->
+        <div class="col-lg-7 col-12">
 
-				</div>
-			</div>
+            @if (!cartItems.Any())
+            {
+                <div class="alert alert-info text-center py-4 fs-5">
+                    Dein Warenkorb ist leer.
+                </div>
+            }
+            else
+            {
+                @foreach (var item in cartItems)
+                {
+                    var product = products.First(p => p.Id == item.ProductId);
 
-			<button class="btn btn-success m-4">
-				Looks Good? Place Order!
-			</button>
-		</div>
-	</div>
+                    <div class="card shadow-sm mb-3 border-1">
+                        <div class="card-body d-flex align-items-center">
+
+                            <!-- IMAGE -->
+                            <img src="/images/product/@product.ImageUrl"
+                                 class="rounded"
+                                 style="width: 90px; height: 90px; object-fit: contain;" />
+
+                            <!-- PRODUCT INFO -->
+                            <div class="ms-3 flex-grow-1">
+                                <h5 class="fw-bold mb-1">@item.Product.Name</h5>
+                                <p class="text-muted small mb-1">@product.Price € / Stück</p>
+
+                                <h5 class="text-danger fw-bold">
+                                    @((item.Count * product.Price).ToString("0.00")) €
+                                </h5>
+                            </div>
+
+                            <!-- QUANTITY CONTROLS -->
+                            <div class="d-flex align-items-center">
+
+                                <button class="btn btn-outline-secondary rounded-circle"
+                                        style="width: 36px; height: 36px;"
+                                        @onclick="() => Decrease(item)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+
+                                <span class="mx-3 fw-bold fs-5">@item.Count</span>
+
+                                <button class="btn btn-outline-secondary rounded-circle"
+                                        style="width: 36px; height: 36px;"
+                                        @onclick="() => Increase(item)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+
+                            <!-- REMOVE BUTTON -->
+                            <button class="btn btn-outline-danger ms-3"
+                                    @onclick="() => Remove(item.ProductId)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- RIGHT SIDE : SUMMARY -->
+        <div class="col-lg-5 col-12">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white text-center fs-4 fw-bold">
+                    Zusammenfassung
+                </div>
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Artikel insgesamt:</span>
+                        <span>@TotalCount</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Gesamtpreis:</span>
+                        <span class="text-danger fw-bold fs-5">@TotalPrice €</span>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="fw-bold mb-3">Abholinformationen</h5>
+
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" class="form-control" />
+                        </div>
+                    </form>
+
+                    <button class="btn btn-success w-100 py-2 mt-3 fs-5">
+                        Bestellung abschließen
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 </div>
+
+@code {
+    private List<ShoppingCart> cartItems = new();
+    private List<Product> products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartService.OnChange += RefreshCart;
+        await LoadCart();
+    }
+
+    private async Task LoadCart()
+    {
+        cartItems = await CartService.GetCartAsync();
+
+        var allProducts = await ProductService.GetAll();
+        products = allProducts
+            .Where(p => cartItems.Any(c => c.ProductId == p.Id))
+            .ToList();
+    }
+
+    private async Task RefreshCart()
+    {
+        await LoadCart();
+        StateHasChanged();
+    }
+
+    private async Task Increase(ShoppingCart item)
+    {
+        item.Count++;
+        await CartService.UpdateItemAsync(item);
+    }
+
+    private async Task Decrease(ShoppingCart item)
+    {
+        if (item.Count > 1)
+        {
+            item.Count--;
+            await CartService.UpdateItemAsync(item);
+        }
+        else
+        {
+            await CartService.RemoveFromCartAsync(item.ProductId);
+        }
+        await RefreshCart();
+    }
+
+    private async Task Remove(int productId)
+    {
+        var obj = await ProductService.GetById(productId);
+        await CartService.RemoveFromCartAsync(productId);
+        Snackbar.Add($"{obj.Name} wurde entfernt", Severity.Success);
+        await RefreshCart();
+    }
+
+    private decimal TotalPrice => cartItems.Sum(i => i.Count * products.First(p => p.Id == i.ProductId).Price);
+    private int TotalCount => cartItems.Sum(i => i.Count);
+
+    public void Dispose()
+    {
+        CartService.OnChange -= RefreshCart;
+    }
+}
