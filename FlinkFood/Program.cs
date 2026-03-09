@@ -21,10 +21,12 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IShoppingCartRepository,ShoppingCartRepository>();
+builder.Services.AddScoped<IOrderRepository,OrderRepository>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<ShoppingCartService>();
+builder.Services.AddScoped<OrderService>();
 builder.Services.AddMudServices();
 
 builder.Services.AddAuthentication(options =>

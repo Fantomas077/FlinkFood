@@ -1,0 +1,58 @@
+﻿@page "/order-confirmation/{Id:int}"
+@inject OrderService OrderService
+
+<div class="container py-5">
+
+    @if (order == null)
+    {
+        <div class="alert alert-danger text-center">
+            Bestellung nicht gefunden.
+        </div>
+    }
+    else
+    {
+        <div class="text-center mb-4">
+            <h2 class="text-success fw-bold">🎉 Bestellung erfolgreich!</h2>
+            <p class="fs-5">Vielen Dank für deine Bestellung.</p>
+        </div>
+
+        <div class="card shadow-sm p-4">
+
+            <h4 class="fw-bold mb-3">Bestellnummer: <span class="text-primary">#@order.Id</span></h4>
+
+            <p><strong>Datum:</strong> @order.Orderdate.ToString("dd.MM.yyyy HH:mm")</p>
+            <p><strong>Status:</strong> @order.Status</p>
+            <p><strong>Email:</strong> @order.Email</p>
+
+            <hr />
+
+            <h5 class="fw-bold mb-3">Bestellte Artikel</h5>
+
+            @foreach (var item in order.OrderDetails)
+            {
+                <div class="d-flex justify-content-between mb-2">
+                    <span>@item.ProductName (* @item.Count)</span>
+                    <span>@(item.Price* item.Count) €</span>
+                </div>
+            }
+
+            <hr />
+
+            <h4 class="fw-bold text-end">
+                Gesamt: <span class="text-danger">@order.OrderTotal €</span>
+            </h4>
+
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private OrderHeader? order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        order = await OrderService.getById(Id);
+    }
+}

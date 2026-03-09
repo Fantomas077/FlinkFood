@@ -83,4 +83,16 @@ public class ShoppingCartService
             Onchange?.Invoke();
         }
     }
+    public async Task ClearCartAsync()
+    {
+        var cart = await GetCartAsync();
+
+        foreach (var item in cart)
+        {
+            await RemoveFromCartAsync(item.ProductId);
+        }
+
+        OnChange?.Invoke();
+    }
+
 }

@@ -8,7 +8,7 @@ namespace FlinkFood.Repository.IRepository
         Task AddOrderAsync(OrderHeader obj);
         Task <List<OrderHeader>> GettAll();
         Task UpdateOderAsync(OrderHeader obj);
-        Task<OrderHeader?> GetByUser(int user);
+        Task<OrderHeader?> GetByUser(string user);
         Task<OrderHeader?> getById(int id);
     }
 }

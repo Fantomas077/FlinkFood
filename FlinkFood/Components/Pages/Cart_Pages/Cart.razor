@@ -1,7 +1,11 @@
 ﻿@page "/cart"
 @using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
 @inject ShoppingCartService CartService
 @inject ProductService ProductService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider _auth
+@inject OrderService OrderService
 @inject ISnackbar Snackbar
 @attribute [Authorize]
 
@@ -143,8 +147,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await _auth.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        orderHearder.UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         CartService.OnChange += RefreshCart;
         await LoadCart();
+
     }
 
     private async Task LoadCart()
@@ -200,8 +210,15 @@
     }
     private async Task Submit()
     {
+        await OrderService.AddOrderAsync(orderHearder, cartItems);
 
+        await CartService.ClearCartAsync();
 
+        Snackbar.Add("Bestellung erfolgreich!", Severity.Success);
+
+        Navigation.NavigateTo($"/order-confirmation/{orderHearder.Id}");
     }
+
+
    
 }

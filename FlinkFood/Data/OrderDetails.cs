@@ -15,7 +15,7 @@ namespace FlinkFood.Data
         [Required]
         public int Count { get; set; }
         [Required]
-        public double Price { get; set; }
+        public decimal Price { get; set; }
         [Required]
         public string ProductName { get; set; }
     }

@@ -7,12 +7,12 @@ namespace FlinkFood.Data
     {
         public int Id { get; set; }
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         [Required]
         [Display(Name = "Order Total ")]
         public decimal OrderTotal { get; set; }
         [Required]
-        public string Status { get; set; }
+        public Status Status { get; set; }
         [Required]
         [Display(Name ="Name")]
         public string Name { get; set; }
@@ -22,6 +22,8 @@ namespace FlinkFood.Data
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+        [Required]
+        public DateTime Orderdate { get; set; }
 
         public List<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
     }
