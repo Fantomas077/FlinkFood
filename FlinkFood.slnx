@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="FlinkFood/FlinkFood.csproj" />
+  <Project Path="FlinkFoodNUnitTest/FlinkFoodNUnitTest.csproj" Id="928d7a1d-4962-42d8-be6e-882b068bb688" />
 </Solution>

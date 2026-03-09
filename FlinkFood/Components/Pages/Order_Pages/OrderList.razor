@@ -4,6 +4,7 @@
 @inject AuthenticationStateProvider _auth
 @using FlinkFood.Utilities
 @using Microsoft.AspNetCore.Authorization
+@inject NavigationManager _Nav
 @attribute [Authorize]
 
 <div class="container py-4">
@@ -30,75 +31,87 @@
     }
     else
     {
-        <table class="table table-hover shadow-sm">
-            <thead class="table-success">
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Datum</th>
-                    <th>Status</th>
-                    <th>Total</th>
-                    <th>Aktion</th>
-                </tr>
-            </thead>
+        <RadzenDataGrid AllowFiltering="true" Pages AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true"
+        PageSize="3" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                        Data="@orders" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single">
+            <Columns>
+                <RadzenDataGridColumn TItem="OrderHeader" Property="Id" Title="ID" Width="80px" />
 
-            <tbody>
-                @foreach (var order in orders)
-                {
-                    <tr>
-                        <td>@order.Id</td>
-                        <td>@order.Name</td>
-                        <td>@order.Email</td>
-                        <td>@order.Orderdate.ToString("dd.MM.yyyy HH:mm")</td>
+                <RadzenDataGridColumn TItem="OrderHeader" Property="Name" Title="Name" Width="150px" />
 
-                        <td>
-                            <span class="badge bg-primary">@order.Status</span>
-                        </td>
+                <RadzenDataGridColumn TItem="OrderHeader" Property="Email" Title="Email" Width="200px" />
 
-                        <td class="fw-bold text-danger">@order.OrderTotal €</td>
+                <RadzenDataGridColumn TItem="OrderHeader" Property="PhoneNumber" Title="Phone" Width="150px" />
 
-                        <td class="d-flex gap-2">
+                <RadzenDataGridColumn TItem="OrderHeader" Property="Orderdate" Title="Datum" Width="180px">
+                    <Template Context="order">
+                        @order.Orderdate.ToString("dd.MM.yyyy HH:mm")
+                    </Template>
+                </RadzenDataGridColumn>
 
-                            @if (isAdmin)
+                <RadzenDataGridColumn TItem="OrderHeader" Property="Status" Title="Status" Width="150px">
+                    <Template Context="order">
+                        <span class="badge bg-primary">@order.Status</span>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="OrderHeader" Property="OrderTotal" Title="Total" Width="120px">
+                    <Template Context="order">
+                        <span class="fw-bold text-danger">@order.OrderTotal €</span>
+                    </Template>
+                </RadzenDataGridColumn>
+
+
+
+                <RadzenDataGridColumn TItem="OrderHeader" Title="Aktion" Width="350px" Filterable="false" Sortable="false">
+                    <Template Context="order">
+
+                        @if (isAdmin)
+                        {
+                            @* PENDING → READY *@
+                            if (order.Status == Status.Pending)
                             {
-                                @* PENDING → READY *@
-                                if (order.Status == Status.Pending)
-                                {
-                                    <button class="btn btn-warning btn-sm"
-                                            @onclick="() => ChangeStatus(order.Id, Status.ReadyForPickUp)">
-                                        Bereit zur Abholung
-                                    </button>
-                                }
-
-                                @* READY → COMPLETED *@
-                                if (order.Status == Status.ReadyForPickUp)
-                                {
-                                    <button class="btn btn-success btn-sm"
-                                            @onclick="() => ChangeStatus(order.Id, Status.Completed)">
-                                        Abgeschlossen
-                                    </button>
-                                }
-
-                                @* CANCEL OPTION *@
-                                if (order.Status != Status.Completed && order.Status != Status.Cancelled)
-                                {
-                                    <button class="btn btn-danger btn-sm"
-                                            @onclick="() => ChangeStatus(order.Id, Status.Cancelled)">
-                                        Stornieren
-                                    </button>
-                                }
+                                <RadzenButton Text="Bereit"
+                                              ButtonStyle="ButtonStyle.Warning"
+                                              Click="@(args => ChangeStatus(order.Id, Status.ReadyForPickUp))"
+                                              Style="margin-right:5px" />
                             }
 
-                            <a class="btn btn-outline-success btn-sm"
-                               href="/order-confirmation/@order.Id">
-                                Details
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            @* READY → COMPLETED *@
+                            if (order.Status == Status.ReadyForPickUp)
+                            {
+                                <RadzenButton Text="Fertig"
+                                              ButtonStyle="ButtonStyle.Success"
+                                              Click="@(args => ChangeStatus(order.Id, Status.Completed))"
+                                              Style="margin-right:5px" />
+                            }
+
+                            @* CANCEL *@
+                            if (order.Status != Status.Completed && order.Status != Status.Cancelled)
+                            {
+                                <RadzenButton Text="Stornieren"
+                                              ButtonStyle="ButtonStyle.Danger"
+                                              Click="@(args => ChangeStatus(order.Id, Status.Cancelled))"
+                                              Style="margin-right:5px" />
+                            }
+                        }
+
+                        <RadzenButton Text="Details"
+                                      ButtonStyle="ButtonStyle.Info"
+                                      Click="@(() => _Nav.NavigateTo($"/order-confirmation/{order.Id}"))" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+                
+          
+
+            </Columns>
+        </RadzenDataGrid>
+
+
+
+
+
     }
 </div>
 
