@@ -27,21 +27,21 @@ namespace FlinkFood.Services
             var authState = await _auth.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            // Récupérer l'ID utilisateur (string)
+            
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
                 throw new Exception("UserId claim not found");
 
             obj.UserId = userIdClaim;
 
-            // Email
+            
             obj.Email = user.FindFirst(ClaimTypes.Email)?.Value;
 
-            // Statut + date
+            
             obj.Status = Status.Pending;
             obj.Orderdate = DateTime.Now;
 
-            // Génération des OrderDetails
+            
             foreach (var item in cartItems)
             {
                 obj.OrderDetails.Add(new OrderDetails
@@ -53,10 +53,10 @@ namespace FlinkFood.Services
                 });
             }
 
-            // Calcul du total
+            
             obj.OrderTotal = obj.OrderDetails.Sum(d => d.Price * d.Count);
 
-            // Sauvegarde
+         
             await _order.AddOrderAsync(obj);
 
             
