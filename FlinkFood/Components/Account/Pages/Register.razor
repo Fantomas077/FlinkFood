@@ -45,16 +45,19 @@
                         <label for="Input.ConfirmPassword">Confirm Password</label>
                         <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
                     </div>
-                    <div class="form-floating mb-3">
-                        <InputSelect @bind-Value="Input.Role" id="Input.Role" class="form-control">
-                            <option value="@SD.Role_Admin">@SD.Role_Admin</option>
-                            <option value="@SD.Role_Customer" selected>@SD.Role_Customer</option>
+                    
+                        <div class="form-floating mb-3">
+                            <InputSelect @bind-Value="Input.Role" id="Input.Role" class="form-control">
+                                <option value="@SD.Role_Admin">@SD.Role_Admin</option>
+                                <option value="@SD.Role_Customer" selected>@SD.Role_Customer</option>
 
-                        </InputSelect>
-                        <label for="Role">--Select Role--</label>
+                            </InputSelect>
+                            <label for="Role">--Select Role--</label>
 
-                        <ValidationMessage For="() => Input.Role" class="text-danger" />
-                    </div>
+                            <ValidationMessage For="() => Input.Role" class="text-danger" />
+                        </div>
+                   
+                    
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
                 </EditForm>
                 <br />

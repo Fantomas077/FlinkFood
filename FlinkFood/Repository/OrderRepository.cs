@@ -23,10 +23,14 @@ namespace FlinkFood.Repository
             return await _db.OrderHeader.Include(r=>r.OrderDetails).FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<OrderHeader?> GetByUser(string user)
+        public async Task<IEnumerable<OrderHeader>> GetByUser(string userId)
         {
-            return await _db.OrderHeader.Include(r => r.OrderDetails).FirstOrDefaultAsync(r => r.UserId == user);
+            return await _db.OrderHeader
+                .Include(r => r.OrderDetails)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
         }
+
 
         public async  Task<List<OrderHeader>> GettAll()
         {

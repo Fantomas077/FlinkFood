@@ -1,9 +1,12 @@
 ﻿@page "/category/create"
 @page "/category/update/{id:int}"
 @using FlinkFood.Services.Extensions
+@using FlinkFood.Utilities
+@using Microsoft.AspNetCore.Authorization
 @inject CategoryService svc
 @inject NavigationManager _Nav
 @inject ISnackbar Snackbar
+@attribute [Authorize(Roles = SD.Role_Admin)]
 
 
 <div class="card shadow border-0 mt-4">

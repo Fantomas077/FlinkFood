@@ -1,0 +1,143 @@
+﻿@page "/order-list"
+@using System.Security.Claims
+@inject OrderService OrderService
+@inject AuthenticationStateProvider _auth
+@using FlinkFood.Utilities
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<div class="container py-4">
+
+    <h2 class="text-success fw-bold mb-4 text-center">
+        📦 Bestellungen
+        @if (isAdmin)
+        {
+            <span class="text-muted">(Admin)</span>
+        }
+    </h2>
+
+    @if (orders == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-success"></div>
+        </div>
+    }
+    else if (!orders.Any())
+    {
+        <div class="alert alert-info text-center py-4 fs-5">
+            Keine Bestellungen gefunden.
+        </div>
+    }
+    else
+    {
+        <table class="table table-hover shadow-sm">
+            <thead class="table-success">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Datum</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var order in orders)
+                {
+                    <tr>
+                        <td>@order.Id</td>
+                        <td>@order.Name</td>
+                        <td>@order.Email</td>
+                        <td>@order.Orderdate.ToString("dd.MM.yyyy HH:mm")</td>
+
+                        <td>
+                            <span class="badge bg-primary">@order.Status</span>
+                        </td>
+
+                        <td class="fw-bold text-danger">@order.OrderTotal €</td>
+
+                        <td class="d-flex gap-2">
+
+                            @if (isAdmin)
+                            {
+                                @* PENDING → READY *@
+                                if (order.Status == Status.Pending)
+                                {
+                                    <button class="btn btn-warning btn-sm"
+                                            @onclick="() => ChangeStatus(order.Id, Status.ReadyForPickUp)">
+                                        Bereit zur Abholung
+                                    </button>
+                                }
+
+                                @* READY → COMPLETED *@
+                                if (order.Status == Status.ReadyForPickUp)
+                                {
+                                    <button class="btn btn-success btn-sm"
+                                            @onclick="() => ChangeStatus(order.Id, Status.Completed)">
+                                        Abgeschlossen
+                                    </button>
+                                }
+
+                                @* CANCEL OPTION *@
+                                if (order.Status != Status.Completed && order.Status != Status.Cancelled)
+                                {
+                                    <button class="btn btn-danger btn-sm"
+                                            @onclick="() => ChangeStatus(order.Id, Status.Cancelled)">
+                                        Stornieren
+                                    </button>
+                                }
+                            }
+
+                            <a class="btn btn-outline-success btn-sm"
+                               href="/order-confirmation/@order.Id">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private IEnumerable<OrderHeader>? orders;
+    private bool isAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        var authState = await _auth.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var role = user.FindFirst(ClaimTypes.Role)?.Value;
+
+        isAdmin = role == SD.Role_Admin;
+
+        if (isAdmin)
+        {
+            orders = await OrderService.GettAllAsync();
+        }
+        else
+        {
+            if (userId == null)
+                return;
+
+            orders = await OrderService.GetByUser(userId);
+        }
+    }
+
+    private async Task ChangeStatus(int id, Status newStatus)
+    {
+        await OrderService.UpdateStatus(id, newStatus);
+        await LoadOrders(); // refresh
+        StateHasChanged();
+    }
+}

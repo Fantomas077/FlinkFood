@@ -1,6 +1,8 @@
 ﻿@page "/order-confirmation/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
 @inject OrderService OrderService
 
+@attribute [Authorize]
 <div class="container py-5">
 
     @if (order == null)

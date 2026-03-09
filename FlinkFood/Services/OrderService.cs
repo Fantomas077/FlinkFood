@@ -71,16 +71,22 @@ namespace FlinkFood.Services
             return obj;
         }
 
-        public async Task<OrderHeader?> GetByUser(string user)
+        public async Task<IEnumerable<OrderHeader>> GetByUser(string userId)
         {
-            var authState = await _auth.GetAuthenticationStateAsync();
-            var user1 = authState.User;
-
-            var userIdClaim = user1.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim != null)
-                user = userIdClaim;
-
-            return await _order.GetByUser(user);
+            return await _order.GetByUser(userId);
         }
+
+
+
+        public async Task UpdateStatus(int orderId, Status newStatus)
+        {
+            var order = await _order.getById(orderId);
+            if (order == null)
+                throw new Exception("Order not found");
+
+            order.Status = newStatus;
+            await _order.UpdateOderAsync(order);
+        }
+
     }
 }
