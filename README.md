@@ -47,6 +47,7 @@ Die Plattform ermöglicht Kunden das Bestellen von Produkten und bietet gleichze
 | Authentifizierung | ASP.NET Identity |
 | Architektur | Services + Repository Pattern |
 | UI/UX | Radzen DataGrid, Badges, dynamische Aktionen |
+| Testing | NUnit, Moq, Unit‑Tests für Services|
 
 
 
